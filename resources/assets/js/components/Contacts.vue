@@ -22,8 +22,11 @@
 
         <h1>Contacts</h1>
         <ul class="list-group">
-            <li class="list-group-item">Contact 1</li>
-            <li class="list-group-item">Contact 2</li>
+            <li v-for="contact in list" class="list-group-item">
+                <strong>{{ contact.name }}</strong> {{ contact.email }} {{ contact.phone }}
+                <button @click="showContact(contact.id)" class="btn btn-default btn-xs">Edit</button>
+                <button @click="deleteContact(contact.id)" class="btn btn-danger btn-xs">Delete</button>
+            </li>
         </ul>
     </div>
 </template>
@@ -82,9 +85,50 @@
                     });
 
             },
-            updateContact: function(){
-                console.log('Updating contact...');
-                return;
+            showContact: function(id){
+                let self = this;
+                axios.get('api/contact/'+id)
+                    .then(function(response){
+                        self.contact.name = response.data.name;
+                        self.contact.email = response.data.email;
+                        self.contact.phone = response.data.phone;
+                        self.contact.id = response.data.id;
+                    });
+                this.edit = true;
+            },
+            updateContact: function(id){
+                console.log('Updating contact '+id+'...');
+
+                let self = this;
+                let params = Object.assign({}, self.contact);
+
+                axios.patch('api/contact/'+id, params)
+                    .then(function(){
+                        self.contact.name = '';
+                        self.contact.email = '';
+                        self.contact.phone = '';
+
+                        self.edit = false;
+
+                        self.fetchContactList();
+                    })
+                    .catch(function(error){
+                        console.log(error);
+                    });
+
+            },
+            deleteContact: function(id){
+                console.log('Deleting contact '+id+' ...');
+
+                let self = this;
+
+                axios.delete('api/contact/'+id)
+                    .then(function(){
+                        self.fetchContactList();
+                    })
+                    .catch(function(error){
+                        console.log(error);
+                    });
             }
         }
     }
